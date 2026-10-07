@@ -1,0 +1,969 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Бронирование — SONORO{% endblock %}
+
+{% block content %}
+<style>
+  /* ========== БРОНИРОВАНИЕ ========== */
+  .booking-hero {
+    text-align: center;
+    padding: 50px 0 40px;
+  }
+
+  .booking-hero .overline {
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #B77EFF;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .booking-hero h1 {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #FFFFFF, #CDB5FF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 16px;
+  }
+
+  .booking-hero p {
+    font-size: 18px;
+    color: #CBCBD4;
+  }
+
+  /* шаги */
+  .step-section {
+    margin-bottom: 48px;
+  }
+
+  .step-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #D9B4FF;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .step-number {
+    background: rgba(139, 92, 246, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #B77EFF;
+    font-size: 18px;
+  }
+
+  /* сетка услуг */
+  .services-booking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .service-booking-card {
+    background: rgba(18, 18, 26, 0.6);
+    backdrop-filter: blur(8px);
+    border-radius: 28px;
+    padding: 24px;
+    border: 1px solid rgba(183, 126, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .service-booking-card:hover {
+    border-color: rgba(183, 126, 255, 0.7);
+    background: rgba(30, 25, 45, 0.8);
+    transform: translateY(-3px);
+  }
+
+  .service-booking-card.selected {
+    border-color: #B77EFF;
+    background: rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 0 2px rgba(183, 126, 255, 0.3);
+  }
+
+  .service-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #F0E6FF;
+    margin-bottom: 8px;
+  }
+
+  .service-price {
+    font-size: 18px;
+    font-weight: 600;
+    color: #B77EFF;
+  }
+
+  /* ИКОНКА В ПРАВОМ НИЖНЕМ УГЛУ */
+  .service-icon {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+
+  .service-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .service-booking-card:hover .service-icon {
+    opacity: 1;
+  }
+
+  .service-booking-card.selected .service-icon {
+    opacity: 1;
+  }
+
+  .service-booking-card.selected .service-icon img {
+    filter: drop-shadow(0 0 4px #B77EFF);
+  }
+
+  /* ========== БЛОК ДАТЫ И ВРЕМЕНИ ========== */
+  .datetime-section {
+    background: rgba(18, 18, 26, 0.6);
+    backdrop-filter: blur(8px);
+    border-radius: 32px;
+    padding: 32px;
+    border: 1px solid rgba(183, 126, 255, 0.2);
+  }
+
+  .date-input {
+    margin-bottom: 24px;
+  }
+
+  .date-input label {
+    display: block;
+    margin-bottom: 10px;
+    color: #D9B4FF;
+    font-weight: 500;
+  }
+
+  .date-input input {
+    width: 100%;
+    max-width: 300px;
+    background: #0E0E14;
+    border: 1px solid #2C2C38;
+    padding: 14px 20px;
+    border-radius: 48px;
+    font-size: 16px;
+    color: #F0F0F0;
+    font-family: inherit;
+    color-scheme: dark;
+  }
+
+  .date-input input:focus {
+    outline: none;
+    border-color: #B77EFF;
+  }
+
+  .date-input input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+  }
+
+  .time-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .time-btn {
+    background: #0E0E14;
+    border: 1px solid #2C2C38;
+    padding: 10px 20px;
+    border-radius: 40px;
+    color: #E0D4FF;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .time-btn:hover:not(.disabled):not(.selected) {
+    border-color: #B77EFF;
+    background: rgba(139, 92, 246, 0.2);
+  }
+
+  .time-btn.selected {
+    background: linear-gradient(105deg, #B77EFF, #8B5CF6);
+    border-color: #B77EFF;
+    color: white;
+  }
+
+  .time-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    background: rgba(18, 18, 26, 0.3);
+  }
+
+  /* ========== БЛОК ОБОРУДОВАНИЯ ========== */
+  .equipment-section {
+    background: rgba(18, 18, 26, 0.6);
+    backdrop-filter: blur(8px);
+    border-radius: 32px;
+    padding: 32px;
+    border: 1px solid rgba(183, 126, 255, 0.2);
+  }
+
+  .equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .equipment-card {
+    background: rgba(10, 10, 15, 0.5);
+    border-radius: 20px;
+    padding: 16px;
+    border: 1px solid rgba(183, 126, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .equipment-card:hover {
+    border-color: rgba(183, 126, 255, 0.6);
+    background: rgba(30, 25, 45, 0.6);
+  }
+
+  .equipment-card.selected {
+    border-color: #B77EFF;
+    background: rgba(139, 92, 246, 0.15);
+  }
+
+  .equipment-info {
+    flex: 1;
+  }
+
+  .equipment-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #F0E6FF;
+    margin-bottom: 4px;
+  }
+
+  .equipment-price {
+    font-size: 14px;
+    color: #B77EFF;
+  }
+
+  .equipment-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(183, 126, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #B77EFF;
+    font-size: 14px;
+  }
+
+  .equipment-card.selected .equipment-check {
+    background: #B77EFF;
+    color: white;
+  }
+
+  /* ========== БЛОК ИТОГОВ ========== */
+  .summary-section {
+    background: rgba(18, 18, 26, 0.6);
+    backdrop-filter: blur(8px);
+    border-radius: 32px;
+    padding: 32px;
+    border: 1px solid rgba(183, 126, 255, 0.2);
+  }
+
+  .comment-input {
+    margin-bottom: 32px;
+  }
+
+  .comment-input label {
+    display: block;
+    margin-bottom: 12px;
+    color: #D9B4FF;
+    font-weight: 500;
+  }
+
+  .comment-input textarea {
+    width: 100%;
+    background: #0E0E14;
+    border: 1px solid #2C2C38;
+    padding: 16px 20px;
+    border-radius: 24px;
+    font-size: 15px;
+    color: #F0F0F0;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  .comment-input textarea:focus {
+    outline: none;
+    border-color: #B77EFF;
+  }
+
+  .total-block {
+    background: rgba(10, 10, 15, 0.5);
+    border-radius: 28px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(183, 126, 255, 0.1);
+  }
+
+  .total-row:last-child {
+    border-bottom: none;
+    font-size: 20px;
+    font-weight: 700;
+    color: #D9B4FF;
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  .total-label {
+    color: #B0B0CC;
+  }
+
+  .total-value {
+    color: #F0E6FF;
+    font-weight: 500;
+  }
+
+  .equipment-list-summary {
+    font-size: 14px;
+    color: #C7A2FF;
+    margin-top: 4px;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel-booking {
+    background: transparent;
+    border: 1px solid rgba(183, 126, 255, 0.5);
+    padding: 14px 32px;
+    border-radius: 60px;
+    color: #E0C8FF;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .btn-cancel-booking:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: #B77EFF;
+  }
+
+  .btn-submit-booking {
+    background: linear-gradient(105deg, #B77EFF, #8B5CF6);
+    border: none;
+    padding: 14px 48px;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-submit-booking:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+  }
+
+  .btn-submit-booking:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Красивое уведомление */
+  .custom-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: linear-gradient(105deg, #B77EFF, #8B5CF6);
+    color: white;
+    padding: 16px 28px;
+    border-radius: 60px;
+    font-weight: 600;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @media (max-width: 850px) {
+    .booking-hero h1 {
+      font-size: 40px;
+    }
+    .services-booking-grid {
+      grid-template-columns: 1fr;
+    }
+    .action-buttons {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="booking-hero">
+    <span class="overline">БРОНИРОВАНИЕ</span>
+    <h1>Забронировать сессию</h1>
+    <p>Выберите услугу, дату и время для вашей записи</p>
+  </div>
+
+  <!-- Шаг 1: Выберите услугу -->
+  <div class="step-section">
+    <div class="step-title">
+      <span class="step-number">1</span>
+      <span>Выберите услугу</span>
+    </div>
+    <div class="services-booking-grid" id="servicesGrid">
+      <div class="service-booking-card" data-service="recording" data-service-name="Звукозапись" data-price="5000" data-unit="час">
+        <div class="service-name">Звукозапись</div>
+        <div class="service-price">5 000 ₽/час</div>
+        <div class="service-icon"><img src="{% static 'images/IMG_6159.png' %}" alt="микрофон"></div>
+      </div>
+      <div class="service-booking-card" data-service="mixing" data-service-name="Сведение" data-price="15000" data-unit="трек">
+        <div class="service-name">Сведение</div>
+        <div class="service-price">15 000 ₽/трек</div>
+        <div class="service-icon"><img src="{% static 'images/IMG_6160.png' %}" alt="микшер"></div>
+      </div>
+      <div class="service-booking-card" data-service="mastering" data-service-name="Мастеринг" data-price="8000" data-unit="трек">
+        <div class="service-name">Мастеринг</div>
+        <div class="service-price">8 000 ₽/трек</div>
+        <div class="service-icon"><img src="{% static 'images/IMG_6161.png' %}" alt="мастеринг"></div>
+      </div>
+      <div class="service-booking-card" data-service="studio_rent" data-service-name="Аренда студии" data-price="3000" data-unit="час">
+        <div class="service-name">Аренда студии</div>
+        <div class="service-price">3 000 ₽/час</div>
+        <div class="service-icon"><img src="{% static 'images/IMG_6162.png' %}" alt="студия"></div>
+      </div>
+      <div class="service-booking-card" data-service="equipment_rent" data-service-name="Аренда оборудования" data-price="2000" data-unit="день">
+        <div class="service-name">Аренда оборудования</div>
+        <div class="service-price">от 2 000 ₽/день</div>
+        <div class="service-icon"><img src="{% static 'images/IMG_6163.png' %}" alt="оборудование"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Шаг 2: Дата и время -->
+  <div class="step-section" id="datetimeSection" style="display: none;">
+    <div class="step-title">
+      <span class="step-number">2</span>
+      <span>Дата и время</span>
+    </div>
+    <div class="datetime-section">
+      <div class="date-input">
+        <label> Выберите дату</label>
+        <input type="date" id="datePicker" min="">
+      </div>
+      <div class="time-grid" id="timeGrid"></div>
+    </div>
+  </div>
+
+  <!-- Шаг 3: Дополнительное оборудование -->
+  <div class="step-section" id="equipmentSection" style="display: none;">
+    <div class="step-title">
+      <span class="step-number">3</span>
+      <span>Аренда оборудования</span>
+      <span style="font-size: 14px; color: #9A9ABA; font-weight: normal;">(опционально)</span>
+    </div>
+    <div class="equipment-section">
+      <div class="equipment-grid" id="equipmentGrid">
+        <div class="equipment-card" data-equipment="neumann_u87" data-price="2000">
+          <div class="equipment-info"><div class="equipment-name">Neumann U87</div><div class="equipment-price">2 000 ₽/день</div></div>
+          <div class="equipment-check">✓</div>
+        </div>
+        <div class="equipment-card" data-equipment="shure_sm7b" data-price="1500">
+          <div class="equipment-info"><div class="equipment-name">Shure SM7B</div><div class="equipment-price">1 500 ₽/день</div></div>
+          <div class="equipment-check">✓</div>
+        </div>
+        <div class="equipment-card" data-equipment="uad_apollo" data-price="3000">
+          <div class="equipment-info"><div class="equipment-name">UAD Apollo Twin</div><div class="equipment-price">3 000 ₽/день</div></div>
+          <div class="equipment-check">✓</div>
+        </div>
+        <div class="equipment-card" data-equipment="focusrite" data-price="1000">
+          <div class="equipment-info"><div class="equipment-name">Focusrite Scarlett 2i2</div><div class="equipment-price">1 000 ₽/день</div></div>
+          <div class="equipment-check">✓</div>
+        </div>
+        <div class="equipment-card" data-equipment="akg_k712" data-price="800">
+          <div class="equipment-info"><div class="equipment-name">AKG K712 Pro</div><div class="equipment-price">800 ₽/день</div></div>
+          <div class="equipment-check">✓</div>
+        </div>
+        <div class="equipment-card" data-equipment="yamaha_hs8" data-price="2500">
+          <div class="equipment-info"><div class="equipment-name">Yamaha HS8 (пара)</div><div class="equipment-price">2 500 ₽/день</div></div>
+          <div class="equipment-check">✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Шаг 4: Итог и комментарий -->
+  <div class="step-section" id="summarySection" style="display: none;">
+    <div class="step-title">
+      <span class="step-number">4</span>
+      <span>Дополнительная информация</span>
+    </div>
+    <div class="summary-section">
+      <div class="comment-input">
+        <label> Комментарий к бронированию</label>
+        <textarea id="commentText" rows="3" placeholder="Опишите ваш проект, особые пожелания или вопросы..."></textarea>
+      </div>
+
+      <div class="total-block">
+        <div class="total-row">
+          <span class="total-label">Услуга:</span>
+          <span class="total-value" id="summaryService">Не выбрано</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Дата:</span>
+          <span class="total-value" id="summaryDate">Не выбрано</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Время:</span>
+          <span class="total-value" id="summaryTime">Не выбрано</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Длительность:</span>
+          <span class="total-value" id="summaryDuration">Не выбрано</span>
+        </div>
+        <div class="total-row" id="summaryEquipmentRow" style="display: none;">
+          <span class="total-label">Оборудование (+):</span>
+          <div><span class="total-value" id="summaryEquipment"></span><span class="equipment-list-summary" id="summaryEquipmentList"></span></div>
+        </div>
+        <div class="total-row">
+          <span class="total-label"> Итого:</span>
+          <span class="total-value" id="summaryTotal">0 ₽</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-cancel-booking" id="cancelBookingBtn">Отмена</button>
+        <button class="btn-submit-booking" id="submitBookingBtn">Забронировать</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'custom-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
+  const isAuthenticated = document.body.dataset.userAuthenticated === 'true';
+
+  // ========== ПЕРЕМЕННЫЕ ==========
+  let selectedService = null;
+  let selectedDate = null;
+  let selectedTimes = [];     
+  let bookedTimes = [];      
+  let selectedEquipment = [];  
+  let allTimes = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
+  const MAX_HOURS = 6;       
+
+  const today = new Date().toISOString().split('T')[0];
+  const datePicker = document.getElementById('datePicker');
+  if (datePicker) datePicker.min = today;
+
+  // Элементы DOM
+  const serviceCards = document.querySelectorAll('.service-booking-card');
+  const datetimeSection = document.getElementById('datetimeSection');
+  const equipmentSection = document.getElementById('equipmentSection');
+  const summarySection = document.getElementById('summarySection');
+  const timeGrid = document.getElementById('timeGrid');
+  const summaryService = document.getElementById('summaryService');
+  const summaryDate = document.getElementById('summaryDate');
+  const summaryTime = document.getElementById('summaryTime');
+  const summaryDuration = document.getElementById('summaryDuration');
+  const summaryEquipmentRow = document.getElementById('summaryEquipmentRow');
+  const summaryEquipment = document.getElementById('summaryEquipment');
+  const summaryEquipmentList = document.getElementById('summaryEquipmentList');
+  const summaryTotal = document.getElementById('summaryTotal');
+  const commentText = document.getElementById('commentText');
+  const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+  const submitBookingBtn = document.getElementById('submitBookingBtn');
+
+  // ========== ШАГ 1: ВЫБОР УСЛУГИ ==========
+  serviceCards.forEach(card => {
+    card.addEventListener('click', () => {
+      if (!isAuthenticated) {
+        showToast('⚠️ Для бронирования необходимо войти в аккаунт');
+        setTimeout(() => { window.location.href = '/login/'; }, 2000);
+        return;
+      }
+      
+      if (card.classList.contains('selected')) {
+        card.classList.remove('selected');
+        selectedService = null;
+        if (datetimeSection) datetimeSection.style.display = 'none';
+        if (equipmentSection) equipmentSection.style.display = 'none';
+        if (summarySection) summarySection.style.display = 'none';
+      } else {
+        serviceCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedService = {
+          id: card.dataset.service,
+          name: card.dataset.serviceName,
+          price: parseInt(card.dataset.price),
+          unit: card.dataset.unit
+        };
+        if (datetimeSection) datetimeSection.style.display = 'block';
+        if (equipmentSection) equipmentSection.style.display = 'none';
+        if (summarySection) summarySection.style.display = 'none';
+        resetDateTime();
+        resetEquipment();
+      }
+    });
+  });
+
+  function resetDateTime() {
+    selectedDate = null;
+    selectedTimes = [];
+    if (datePicker) datePicker.value = '';
+    if (timeGrid) timeGrid.innerHTML = '';
+  }
+
+  function resetEquipment() {
+    selectedEquipment = [];
+    document.querySelectorAll('.equipment-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+  }
+
+  // ========== ШАГ 2: ВЫБОР ДАТЫ ==========
+  // ========== ШАГ 2: ВЫБОР ДАТЫ ==========
+if (datePicker) {
+  datePicker.addEventListener('change', async function() {
+    selectedDate = this.value;
+    selectedTimes = [];
+    if (timeGrid) timeGrid.innerHTML = '<div style="color: #9A9ABA;">Загрузка...</div>';
+    
+    if (!selectedService) {
+      if (timeGrid) timeGrid.innerHTML = '<div style="color: #ff6b6b;">Сначала выберите услугу</div>';
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/booked-slots/?service=${selectedService.id}&date=${selectedDate}`);
+      const data = await response.json();
+      bookedTimes = data.booked || [];
+      renderTimeSlots();
+    } catch (error) {
+      console.error('Ошибка:', error);
+      if (timeGrid) timeGrid.innerHTML = '<div style="color: #ff6b6b;">Ошибка загрузки</div>';
+    }
+  });
+}
+
+  // ========== ОТОБРАЖЕНИЕ ВРЕМЕНИ ==========
+ // ========== ОТОБРАЖЕНИЕ ВРЕМЕНИ ==========
+function renderTimeSlots() {
+  if (!timeGrid) return;
+  
+  // Сортируем часы по порядку
+  const sortedTimes = [...allTimes].sort();
+  
+  timeGrid.innerHTML = sortedTimes.map(time => {
+    // Проверяем, занят ли этот час (уже подтверждённые бронирования)
+    const isBooked = bookedTimes.includes(time);
+    // Проверяем, выбран ли этот час пользователем
+    const isSelected = selectedTimes.includes(time);
+    
+    // Если час занят - добавляем класс disabled и делаем кнопку неактивной
+    if (isBooked) {
+      return `<button class="time-btn disabled" data-time="${time}" disabled style="opacity: 0.4; cursor: not-allowed; text-decoration: line-through;">${time}</button>`;
+    }
+    
+    return `<button class="time-btn ${isSelected ? 'selected' : ''}" data-time="${time}">${time}</button>`;
+  }).join('');
+  
+  // Добавляем обработчики только на свободные часы
+  document.querySelectorAll('.time-btn:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const clickedTime = btn.dataset.time;
+      const clickedIndex = allTimes.indexOf(clickedTime);
+      
+      if (selectedTimes.includes(clickedTime)) {
+        // Если час уже выбран - убираем его и всё, что после
+        const clickedPos = selectedTimes.indexOf(clickedTime);
+        selectedTimes = selectedTimes.slice(0, clickedPos);
+      } 
+      else {
+        if (selectedTimes.length === 0) {
+          // Если ничего не выбрано - выбираем этот час
+          selectedTimes = [clickedTime];
+        } else {
+          const lastSelected = selectedTimes[selectedTimes.length - 1];
+          const lastIndex = allTimes.indexOf(lastSelected);
+          const firstSelected = selectedTimes[0];
+          const firstIndex = allTimes.indexOf(firstSelected);
+          
+          // Проверяем, можно ли добавить час
+          if (clickedIndex === lastIndex + 1) {
+            // Добавляем час после последнего выбранного
+            if (selectedTimes.length + 1 <= MAX_HOURS) {
+              selectedTimes.push(clickedTime);
+            } else {
+              showToast(`❌ Нельзя забронировать больше ${MAX_HOURS} часов подряд`);
+              return;
+            }
+          } 
+          else if (clickedIndex === firstIndex - 1) {
+            // Добавляем час перед первым выбранным
+            if (selectedTimes.length + 1 <= MAX_HOURS) {
+              selectedTimes.unshift(clickedTime);
+            } else {
+              showToast(`❌ Нельзя забронировать больше ${MAX_HOURS} часов подряд`);
+              return;
+            }
+          }
+          else {
+            // Час не рядом с выбранным диапазоном - начинаем новый выбор
+            selectedTimes = [clickedTime];
+          }
+        }
+      }
+      
+      // Проверяем, что среди выбранных часов нет занятых (на всякий случай)
+      const hasBooked = selectedTimes.some(t => bookedTimes.includes(t));
+      if (hasBooked) {
+        showToast('❌ Некоторые выбранные часы уже заняты');
+        selectedTimes = [];
+      }
+      
+      // Перерисовываем кнопки
+      renderTimeSlots();
+      
+      // Показываем следующий шаг
+      if (selectedTimes.length > 0) {
+        if (equipmentSection) equipmentSection.style.display = 'block';
+        if (summarySection) summarySection.style.display = 'none';
+      } else {
+        if (equipmentSection) equipmentSection.style.display = 'none';
+        if (summarySection) summarySection.style.display = 'none';
+      }
+      
+      updateSummary();
+    });
+  });
+}
+
+  // ========== ШАГ 3: ВЫБОР ОБОРУДОВАНИЯ ==========
+  const equipmentCards = document.querySelectorAll('.equipment-card');
+  
+  equipmentCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const equipmentId = card.dataset.equipment;
+      const price = parseInt(card.dataset.price);
+      
+      if (card.classList.contains('selected')) {
+        card.classList.remove('selected');
+        selectedEquipment = selectedEquipment.filter(e => e.id !== equipmentId);
+      } else {
+        card.classList.add('selected');
+        selectedEquipment.push({
+          id: equipmentId,
+          name: card.querySelector('.equipment-name').innerText,
+          price: price
+        });
+      }
+      
+      if (summarySection) summarySection.style.display = 'block';
+      updateSummary();
+    });
+  });
+
+  // ========== ОБНОВЛЕНИЕ ИТОГОВ ==========
+  function updateSummary() {
+    if (summaryService) {
+      if (selectedService) {
+        summaryService.textContent = `${selectedService.name} (${selectedService.price} ₽/${selectedService.unit})`;
+      } else {
+        summaryService.textContent = 'Не выбрано';
+      }
+    }
+    
+    if (summaryDate) summaryDate.textContent = selectedDate || 'Не выбрано';
+    
+    if (summaryTime && selectedTimes.length > 0) {
+      const startTime = selectedTimes[0];
+      const endHour = parseInt(selectedTimes[selectedTimes.length - 1].split(':')[0]) + 1;
+      summaryTime.textContent = `${startTime} - ${endHour}:00`;
+    } else {
+      summaryTime.textContent = 'Не выбрано';
+    }
+    
+    if (summaryDuration && selectedTimes.length > 0) {
+      summaryDuration.textContent = `${selectedTimes.length} час.`;
+    } else {
+      summaryDuration.textContent = 'Не выбрано';
+    }
+    
+    const servicePrice = selectedService && selectedTimes.length > 0 ? selectedTimes.length * selectedService.price : 0;
+    const equipmentPrice = selectedEquipment.reduce((sum, item) => sum + item.price, 0);
+    const totalPrice = servicePrice + equipmentPrice;
+    
+    if (selectedEquipment.length > 0) {
+      if (summaryEquipmentRow) summaryEquipmentRow.style.display = 'flex';
+      if (summaryEquipment) summaryEquipment.textContent = `+${equipmentPrice} ₽`;
+      if (summaryEquipmentList) summaryEquipmentList.textContent = selectedEquipment.map(e => e.name).join(', ');
+    } else {
+      if (summaryEquipmentRow) summaryEquipmentRow.style.display = 'none';
+    }
+    
+    if (summaryTotal) summaryTotal.textContent = `${totalPrice} ₽`;
+  }
+
+  // ========== ОТМЕНА ==========
+  if (cancelBookingBtn) {
+    cancelBookingBtn.addEventListener('click', () => {
+      selectedService = null;
+      selectedDate = null;
+      selectedTimes = [];
+      selectedEquipment = [];
+      serviceCards.forEach(c => c.classList.remove('selected'));
+      equipmentCards.forEach(c => c.classList.remove('selected'));
+      if (datetimeSection) datetimeSection.style.display = 'none';
+      if (equipmentSection) equipmentSection.style.display = 'none';
+      if (summarySection) summarySection.style.display = 'none';
+      if (datePicker) datePicker.value = '';
+      if (timeGrid) timeGrid.innerHTML = '';
+      if (commentText) commentText.value = '';
+    });
+  }
+
+  // ========== ПОДТВЕРЖДЕНИЕ БРОНИРОВАНИЯ ==========
+  // ========== ПОДТВЕРЖДЕНИЕ БРОНИРОВАНИЯ ==========
+if (submitBookingBtn) {
+  submitBookingBtn.addEventListener('click', async function() {
+    if (!isAuthenticated) {
+      showToast('⚠️ Для бронирования необходимо войти в аккаунт');
+      setTimeout(() => { window.location.href = '/login/'; }, 2000);
+      return;
+    }
+    
+    if (!selectedService || !selectedDate || selectedTimes.length === 0) {
+      showToast('❌ Заполните все поля');
+      return;
+    }
+    
+    const hasBooked = selectedTimes.some(t => bookedTimes.includes(t));
+    if (hasBooked) {
+      showToast('❌ Некоторые выбранные часы уже заняты');
+      return;
+    }
+    
+    const servicePrice = selectedTimes.length * selectedService.price;
+    const equipmentPrice = selectedEquipment.reduce((sum, item) => sum + item.price, 0);
+    const totalPrice = servicePrice + equipmentPrice;
+    const comment = commentText?.value || '';
+    
+    // ПРАВИЛЬНОЕ ПОЛУЧЕНИЕ CSRF-ТОКЕНА
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    let equipmentText = '';
+    if (selectedEquipment.length > 0) {
+      equipmentText = selectedEquipment.map(e => e.name).join(', ');
+    }
+    
+    try {
+      const response = await fetch('/api/create-booking/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+          service: selectedService.id,
+          date: selectedDate,
+          time: selectedTimes[0],
+          duration: selectedTimes.length,
+          equipment: selectedEquipment.map(e => e.id),
+          equipment_price: equipmentPrice,
+          comment: comment
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        showToast(`✅ Заявка отправлена! Администратор рассмотрит её в ближайшее время.`);
+        
+        // Сбрасываем всё
+        selectedService = null;
+        selectedDate = null;
+        selectedTimes = [];
+        selectedEquipment = [];
+        serviceCards.forEach(c => c.classList.remove('selected'));
+        equipmentCards.forEach(c => c.classList.remove('selected'));
+        if (datetimeSection) datetimeSection.style.display = 'none';
+        if (equipmentSection) equipmentSection.style.display = 'none';
+        if (summarySection) summarySection.style.display = 'none';
+        if (datePicker) datePicker.value = '';
+        if (timeGrid) timeGrid.innerHTML = '';
+        if (commentText) commentText.value = '';
+      } else {
+        showToast(`❌ Ошибка: ${data.error || 'Не удалось забронировать'}`);
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      showToast('❌ Ошибка соединения. Попробуйте позже.');
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,476 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Услуги — SONORO{% endblock %}
+
+{% block content %}
+<style>
+  /* ========== НАШЕ ОБОРУДОВАНИЕ С КАРУСЕЛЬЮ ========== */
+  .equipment-section {
+    padding: 80px 0 100px;
+    border-top: 1px solid rgba(183, 126, 255, 0.15);
+  }
+
+  .equipment-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .equipment-info {
+    flex: 1;
+    min-width: 280px;
+  }
+
+  .equipment-info h2 {
+    font-size: 42px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FFFFFF, #CDB5FF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+  }
+
+  .equipment-desc {
+    color: #C0C0D8;
+    line-height: 1.6;
+    margin-bottom: 32px;
+    font-size: 16px;
+  }
+
+  .equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .equip-item {
+    background: rgba(18, 18, 26, 0.5);
+    border-radius: 20px;
+    padding: 18px 16px;
+    border: 1px solid rgba(183, 126, 255, 0.2);
+  }
+
+  .equip-brand {
+    font-size: 22px;
+    font-weight: 700;
+    color: #D9B4FF;
+    margin-bottom: 6px;
+  }
+
+  .equip-type {
+    font-size: 14px;
+    color: #9A9AC0;
+  }
+
+  /* КАРУСЕЛЬ */
+  .carousel-container {
+    flex: 1;
+    min-width: 320px;
+    position: relative;
+  }
+
+  .carousel {
+    position: relative;
+    border-radius: 32px;
+    overflow: hidden;
+    background: rgba(18, 18, 26, 0.5);
+    border: 1px solid rgba(183, 126, 255, 0.3);
+  }
+
+  .carousel-slides {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+
+  .carousel-slide {
+    min-width: 100%;
+    aspect-ratio: 4 / 3;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  /* ФОТО ДЛЯ КАРУСЕЛИ - ПРАВИЛЬНЫЕ ПУТИ */
+  .slide1 { background-image: url({% static 'images/slider1.jpg' %}); }
+  .slide2 { background-image: url({% static 'images/slider2.jpg' %}); }
+  .slide3 { background-image: url({% static 'images/slider3.jpg' %}); }
+  .slide4 { background-image: url({% static 'images/slider4.jpg' %}); }
+  .slide5 { background-image: url({% static 'images/slider5.jpg' %}); }
+  .slide6 { background-image: url({% static 'images/slider6.jpg' %}); }
+
+  .carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(183, 126, 255, 0.5);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 12px 18px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    z-index: 10;
+    font-family: monospace;
+  }
+
+  .carousel-btn:hover {
+    background: rgba(139, 92, 246, 0.7);
+    border-color: #B77EFF;
+  }
+
+  .carousel-btn.prev {
+    left: 16px;
+  }
+
+  .carousel-btn.next {
+    right: 16px;
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(183, 126, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .dot.active {
+    background: #B77EFF;
+    width: 24px;
+    border-radius: 10px;
+  }
+
+  .carousel-badge {
+    text-align: right;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #7A7AA0;
+  }
+
+  /* ========== CTA БЛОК ========== */
+  .cta-section {
+    padding: 80px 0 60px;
+    text-align: center;
+    border-top: 1px solid rgba(183, 126, 255, 0.15);
+  }
+
+  .cta-title {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #FFFFFF, #D9B4FF, #B77EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .cta-description {
+    font-size: 20px;
+    color: #CBCBD4;
+    max-width: 550px;
+    margin: 0 auto 36px;
+    line-height: 1.5;
+  }
+
+  .cta-button-group {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-btn-primary {
+    background: linear-gradient(105deg, #B77EFF, #8B5CF6);
+    border: none;
+    padding: 14px 38px;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+    transition: all 0.25s ease;
+  }
+
+  .cta-btn-primary:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(105deg, #c792ff, #9b6eff);
+    box-shadow: 0 14px 30px rgba(139, 92, 246, 0.55);
+  }
+
+  .cta-btn-secondary {
+    background: transparent;
+    border: 1.5px solid rgba(183, 126, 255, 0.7);
+    padding: 14px 38px;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #EEDDFF;
+    cursor: pointer;
+    font-family: inherit;
+    backdrop-filter: blur(4px);
+    transition: all 0.25s ease;
+  }
+
+  .cta-btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: #B77EFF;
+    color: white;
+    transform: translateY(-3px);
+  }
+
+  
+</style>
+
+<div class="services-hero">
+  <span class="overline">КАТАЛОГ УСЛУГ</span>
+  <h1>Профессиональные услуги для вашей музыки</h1>
+  <p>От записи до мастеринга — полный цикл производства музыки под одной крышей.</p>
+</div>
+
+<div class="services-grid">
+  <!-- Звукозапись -->
+  <div class="service-card">
+    <div class="service-title">Звукозапись</div>
+    <div class="service-price">от 5 000 ₽/час</div>
+    <p class="service-description">Профессиональная запись вокала и инструментов в акустически совершенном пространстве с использованием премиального оборудования.</p>
+    <ul class="service-features">
+      <li>Neumann U87 и другие топовые микрофоны</li>
+      <li>Акустически обработанные кабины</li>
+      <li>Опытный звукорежиссёр</li>
+      <li>Неограниченное количество дублей</li>
+      <li>Базовая обработка голоса</li>
+    </ul>
+    <button class="service-btn" onclick="window.location.href='/booking/'">Забронировать →</button>
+  </div>
+
+  <!-- Сведение -->
+  <div class="service-card">
+    <div class="service-title">Сведение</div>
+    <div class="service-price">от 15 000 ₽/трек</div>
+    <p class="service-description">Создание идеального баланса всех элементов вашего трека для достижения профессионального звучания.</p>
+    <ul class="service-features">
+      <li>Профессиональное сведение в Pro Tools / Logic</li>
+      <li>Баланс всех инструментов и вокала</li>
+      <li>Эквализация и динамическая обработка</li>
+      <li>Пространственная обработка (реверберация, задержка)</li>
+      <li>До 3 ревизий включено</li>
+    </ul>
+    <button class="service-btn" onclick="window.location.href='/booking/'">Забронировать →</button>
+  </div>
+
+  <!-- Мастеринг -->
+  <div class="service-card">
+    <div class="service-title">Мастеринг</div>
+    <div class="service-price">от 8 000 ₽/трек</div>
+    <p class="service-description">Финальная обработка вашего микса для идеального звучания на всех платформах и устройствах.</p>
+    <ul class="service-features">
+      <li>Финальная эквализация и компрессия</li>
+      <li>Лимитирование и нормализация</li>
+      <li>Подготовка к стриминговым платформам</li>
+      <li>Форматы: WAV, MP3, FLAC</li>
+      <li>Stem-мастеринг доступен</li>
+    </ul>
+    <button class="service-btn" onclick="window.location.href='/booking/'">Забронировать →</button>
+  </div>
+
+  <!-- Аренда студии -->
+  <div class="service-card">
+    <div class="service-title">Аренда студии</div>
+    <div class="service-price">от 3 000 ₽/час</div>
+    <p class="service-description">Полностью оборудованная студия в вашем распоряжении для самостоятельной работы или с нашей командой.</p>
+    <ul class="service-features">
+      <li>Контрольная комната и live-зал</li>
+      <li>Микшерный пульт SSL / Neve</li>
+      <li>Полный набор плагинов</li>
+      <li>Комфортная зона отдыха</li>
+      <li>Техническая поддержка</li>
+    </ul>
+    <button class="service-btn" onclick="window.location.href='/booking/'">Забронировать →</button>
+  </div>
+
+  <!-- Аренда оборудования -->
+  <div class="service-card">
+    <div class="service-title">Аренда оборудования</div>
+    <div class="service-price">от 2 000 ₽/день</div>
+    <p class="service-description">Премиальное студийное оборудование напрокат для ваших проектов вне нашей студии.</p>
+    <ul class="service-features">
+      <li>Микрофоны: Neumann, AKG, Shure</li>
+      <li>Предусилители и компрессоры</li>
+      <li>Мониторы и наушники</li>
+      <li>Кабели и аксессуары</li>
+      <li>Доставка по городу</li>
+    </ul>
+    <button class="service-btn" onclick="window.location.href='/booking/'">Забронировать →</button>
+  </div>
+</div>
+
+<!-- Блок КАК МЫ РАБОТАЕМ -->
+<div class="how-work-section">
+  <div class="container">
+    <div class="how-work-header">
+      <span class="overline">КАК МЫ РАБОТАЕМ</span>
+      <h2>Простой процесс работы</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <h3>Консультация</h3>
+        <p>Обсуждаем ваш проект и подбираем оптимальные услуги</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <h3>Бронирование</h3>
+        <p>Выбираете удобное время и бронируете сессию</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <h3>Работа</h3>
+        <p>Создаём музыку вместе с нашей командой профессионалов</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">04</div>
+        <h3>Результат</h3>
+        <p>Получаете готовый продукт высочайшего качества</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== НАШЕ ОБОРУДОВАНИЕ С КАРУСЕЛЬЮ ========== -->
+<section class="equipment-section">
+  <div class="container">
+    <div class="equipment-wrapper">
+      <div class="equipment-info">
+        <span class="overline">НАШЕ ОБОРУДОВАНИЕ</span>
+        <h2>Только премиальное оборудование</h2>
+        <p class="equipment-desc">Мы используем исключительно профессиональное оборудование ведущих мировых производителей для достижения безупречного качества звука.</p>
+        <div class="equipment-grid">
+          <div class="equip-item">
+            <div class="equip-brand">SSL</div>
+            <div class="equip-type">Микшерные консоли</div>
+          </div>
+          <div class="equip-item">
+            <div class="equip-brand">Neumann</div>
+            <div class="equip-type">Микрофоны</div>
+          </div>
+          <div class="equip-item">
+            <div class="equip-brand">Focal</div>
+            <div class="equip-type">Мониторы</div>
+          </div>
+          <div class="equip-item">
+            <div class="equip-brand">Universal Audio</div>
+            <div class="equip-type">Предусилители</div>
+          </div>
+        </div>
+        <div style="margin-top: 24px; font-size: 13px; color: #7A7AA0;">✓ Доступно 24/7</div>
+      </div>
+
+      <div class="carousel-container">
+        <div class="carousel">
+          <div class="carousel-slides" id="carouselSlides">
+            <div class="carousel-slide slide1"></div>
+            <div class="carousel-slide slide2"></div>
+            <div class="carousel-slide slide3"></div>
+            <div class="carousel-slide slide4"></div>
+            <div class="carousel-slide slide5"></div>
+            <div class="carousel-slide slide6"></div>
+          </div>
+          <button class="carousel-btn prev" id="prevBtn">◀</button>
+          <button class="carousel-btn next" id="nextBtn">▶</button>
+        </div>
+        <div class="carousel-dots" id="carouselDots"></div>
+        <div class="carousel-badge">✧ 6 фотографий студии</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA секция -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-title">Готовы начать?</h2>
+    <p class="cta-description">Свяжитесь с нами для консультации или сразу забронируйте сессию.</p>
+    <div class="cta-button-group">
+      <button class="cta-btn-primary" onclick="window.location.href='/booking/'">Забронировать →</button>
+      <button class="cta-btn-secondary" onclick="window.location.href='/artists/'">Найти артистов</button>
+    </div>
+  </div>
+</section>
+
+
+<script>
+  // Карусель
+  (function() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const slidesContainer = document.getElementById('carouselSlides');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dotsContainer = document.getElementById('carouselDots');
+
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+
+    function updateCarousel() {
+      if (slidesContainer) {
+        slidesContainer.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
+      }
+      const dots = document.querySelectorAll('.dot');
+      dots.forEach(function(dot, idx) {
+        if (idx === currentIndex) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+
+    function createDots() {
+      if (!dotsContainer) return;
+      dotsContainer.innerHTML = '';
+      for (var i = 0; i < totalSlides; i++) {
+        var dot = document.createElement('div');
+        dot.classList.add('dot');
+        if (i === currentIndex) dot.classList.add('active');
+        dot.addEventListener('click', (function(idx) {
+          return function() {
+            currentIndex = idx;
+            updateCarousel();
+          };
+        })(i));
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    function nextSlide() {
+      currentIndex = (currentIndex + 1) % totalSlides;
+      updateCarousel();
+    }
+
+    function prevSlide() {
+      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+      updateCarousel();
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+
+    createDots();
+  })();
+</script>
+{% endblock %}
